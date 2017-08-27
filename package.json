@@ -1,0 +1,16 @@
+{
+  "name": "paiukscript",
+  "version": "1.0.0",
+  "description": "Simple Javascript based programming language.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/l18m/paiukscript.git"
+  },
+  "author": "l18m",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/l18m/paiukscript/issues"
+  },
+  "homepage": "https://github.com/l18m/paiukscript#readme"
+}
