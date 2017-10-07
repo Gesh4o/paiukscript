@@ -1,12 +1,13 @@
-module.export = class InputStream {
-    constructor() {
+module.exports = class InputStream {
+    constructor(input) {
+        this.input = input;        
         this.pos = 0;
-        this.line = 1;
+        this.row = 1;
         this.col = 0;
     }
 
     next() {
-        var char = input.charAt(this.pos++);
+        var char = this.input.charAt(this.pos++);
         if (char == "\n") {
             this.row++;
             this.col = 0;
@@ -19,14 +20,14 @@ module.export = class InputStream {
     }
 
     peek() {
-        return input.charAt(this.pos);
+        return this.input.charAt(this.pos);
     }
 
     isEndOfFile() {
-        return peek() == "";
+        return this.peek() == "";
     }
 
-    croak(msg) {
-        throw new Error(msg + " (" + this.row + ":" + this.col + ")");
+    raiseError(errorMessage) {
+        throw new Error(errorMessage + " (" + this.row + ":" + this.col + ")");
     }
 }

@@ -13,64 +13,64 @@ module.exports = class Parser {
 
     parse(input) {
         this.input = input;
-        return parseToplevel();
+        return this.parseToplevel();
     }
 
-    isPunctuation(ch) {
-        var tok = input.peek();
-        return tok && tok.type == "punc" && (!ch || tok.value == ch) && tok;
+    isPunctuation(char) {
+        let token = this.input.peek();
+        return token && token.type == "punc" && (!char || token.value == char) && token;
     }
 
-    isKeyword(kw) {
-        var tok = input.peek();
-        return tok && tok.type == "kw" && (!kw || tok.value == kw) && tok;
+    isKeyword(keyword) {
+        let token = this.input.peek();
+        return token && token.type == "kw" && (!keyword || token.value == keyword) && token;
     }
 
-    isOperator(op) {
-        var tok = input.peek();
-        return tok && tok.type == "op" && (!op || tok.value == op) && tok;
+    isOperator(operand) {
+        let token = this.input.peek();
+        return token && token.type == "op" && (!operand || token.value == operand) && token;
     }
 
-    skipPunctuation(ch) {
-        if (isPunctuation(ch)) {
-            input.next();
+    skipPunctuation(char) {
+        if (this.isPunctuation(char)) {
+            this.input.next();
         } else {
-            input.croak("Expecting punctuation: \"" + ch + "\"");
+            this.input.raiseError("Expecting punctuation: \"" + char + "\"");
         }
     }
 
-    skipKeyword(kw) {
-        if (isKeyword(kw)) {
-            input.next();
+    skipKeyword(keyword) {
+        if (this.isKeyword(keyword)) {
+            this.input.next();
         } else {
-            input.croak("Expecting keyword: \"" + kw + "\"");
+            this.input.raiseError("Expecting keyword: \"" + keyword + "\"");
         }
     }
 
-    skipOperator(op) {
-        if (isOperator(op)) {
-            input.next();
+    skipOperator(char) {
+        if (this.isOperator(char)) {
+            this.input.next();
         } else {
-            input.croak("Expecting operator: \"" + op + "\"");
+            this.input.raiseError("Expecting operator: \"" + char + "\"");
         }
     }
 
     unexpected() {
-        input.croak("Unexpected token: " + JSON.stringify(input.peek()));
+        this.input.raiseError("Unexpected token: " + JSON.stringify(this.input.peek()));
     }
 
-    maybeBinary(left, my_prec) {
-        var tok = isOperator();
-        if (tok) {
-            var his_prec = PRECEDENCE[tok.value];
-            if (his_prec > my_prec) {
-                input.next();
-                return maybeBinary({
-                    type: tok.value == "=" ? "assign" : "binary",
-                    operator: tok.value,
+    maybeBinary(left, givenPrecedence) {
+        let token = this.isOperator();
+        if (token) {
+            let currentPrecedence = this.PRECEDENCE[token.value];
+            if (currentPrecedence > givenPrecedence) {
+                this.input.next();
+                return this.maybeBinary({
+                    type: token.value == "=" ? "assign" : "binary",
+                    operator: token.value,
                     left: left,
-                    right: maybeBinary(parseAtomic(), his_prec)
-                }, my_prec);
+                    right: this.maybeBinary(this.parseAtomic(), currentPrecedence)
+                }, givenPrecedence);
             }
         }
 
@@ -78,27 +78,27 @@ module.exports = class Parser {
     }
 
     delimited(start, stop, separator, parser) {
-        var a = [], first = true;
-        skipPunctuation(start);
-        while (!input.isEndOfFile()) {
-            if (isPunctuation(stop)) {
+        let a = [], first = true;
+        this.skipPunctuation(start);
+        while (!this.input.isEndOfFile()) {
+            if (this.isPunctuation(stop)) {
                 break;
             }
 
             if (first) {
                 first = false;
             } else {
-                skipPunctuation(separator);
+                this.skipPunctuation(separator);
             }
 
-            if (isPunctuation(stop)) {
+            if (this.isPunctuation(stop)) {
                 break;
             }
 
-            a.push(parser());
+            a.push(parser.bind(this)());
         }
 
-        skipPunctuation(stop);
+        this.skipPunctuation(stop);
         return a;
     }
 
@@ -106,38 +106,38 @@ module.exports = class Parser {
         return {
             type: "call",
             func: func,
-            args: delimited("(", ")", ",", parse_expression),
+            args: this.delimited("(", ")", ",", this.parseExpression.bind(this)),
         };
     }
 
     parseVarname() {
-        var name = input.next();
+        let name = this.input.next();
         if (name.type != "var") {
-            input.croak("Expecting variable name");
+            this.input.raiseError("Expecting variable name");
         }
 
         return name.value;
     }
 
     parseIf() {
-        skipKeyword("if"); {
-            var cond = parseExpression();
+        this.skipKeyword("if");
+        let cond = this.parseExpression();
+
+
+        if (!this.isPunctuation("{")) {
+            this.skipKeyword("then");
         }
 
-        if (!isPunctuation("{")) {
-            skipKeyword("then");
-        }
-
-        var then = parseExpression();
-        var ret = {
+        let then = this.parseExpression();
+        let ret = {
             type: "if",
             cond: cond,
             then: then,
         };
 
-        if (isKeyword("else")) {
-            input.next();
-            ret.else = parse_expression();
+        if (this.isKeyword("else")) {
+            this.input.next();
+            ret.else = this.parseExpression();
         }
 
         return ret;
@@ -146,77 +146,92 @@ module.exports = class Parser {
     parseLambda() {
         return {
             type: "lambda",
-            vars: delimited("(", ")", ",", parse_varname),
-            body: parseExpression()
+            vars: this.delimited("(", ")", ",", this.parseVarname),
+            body: this.parseExpression()
         };
     }
 
     parseBool() {
         return {
             type: "bool",
-            value: input.next().value == "true"
+            value: this.input.next().value == "true"
         };
     }
 
-    maybeCall(expr) {
-        expr = expr();
-        return isPunctuation("(") ? parseCall(expr) : expr;
+    maybeCall(callable) {
+        let result = callable();
+        return this.isPunctuation("(") ? this.parseCall(result) : result;
     }
 
     parseAtomic() {
-        return maybeCall(function () {
-            if (isPunctuation("(")) {
-                input.next();
-                var exp = parseExpression();
-                skipPunctuation(")");
+        let that = this;
+        return this.maybeCall(function () {
+            if (that.isPunctuation("(")) {
+                that.input.next();
+                let exp = that.parseExpression();
+                that.skipPunctuation(")");
                 return exp;
             }
 
-            if (isPunctuation("{")) {
-                return parseProg();
+            if (that.isPunctuation("{")) {
+                return that.parseProg();
             }
 
-            if (isKeyword("if")) {
-                return parseIf()
-            };
-
-            if (isKeyword("true") || isKeyword("false")) {
-                return parseBoold();
+            if (that.isKeyword("if")) {
+                return that.parseIf();
             }
 
-            if (isKeyword("lambda") || isKeyword("λ")) {
-                input.next();
-                return parseLambda();
+            if (that.isKeyword("true") || that.isKeyword("false")) {
+                return that.parseBool();
             }
 
-            var tok = input.next();
-            if (tok.type == "var" || tok.type == "num" || tok.type == "str")
-                return tok;
-            unexpected();
+            if (that.isKeyword("lambda") || that.isKeyword("λ")) {
+                that.input.next();
+                return that.parseLambda();
+            }
+
+            let token = that.input.next();
+            if (token.type == "var" || token.type == "num" || token.type == "str"){
+                return token;                
+            }
+
+            that.unexpected();
         });
     }
+
     parseToplevel() {
-        var prog = [];
-        while (!input.isEndOfFile()) {
-            prog.push(parseExpression());
-            if (!input.isEndOfFile()) {
-                skipPunctuation(";")
-            };
+        let prog = [];
+        while (!this.input.isEndOfFile()) {
+            prog.push(this.parseExpression());
+            
+            if (!this.input.isEndOfFile()) {
+                this.skipPunctuation(";");
+            }
         }
 
         return { type: "prog", prog: prog };
     }
 
     parseProg() {
-        var prog = delimited("{", "}", ";", parse_expression);
-        if (prog.length == 0) return FALSE;
-        if (prog.length == 1) return prog[0];
-        return { type: "prog", prog: prog };
+        let prog = this.delimited("{", "}", ";", parseExpression);
+        if (prog.length == 0) {
+            return FALSE;
+        }
+
+        if (prog.length == 1) {
+            return prog[0];
+        }
+
+        return {
+            type: "prog",
+            prog: prog
+        };
     }
 
     parseExpression() {
-        return maybeCall(function () {
-            return maybeBinary(parse_atom(), 0);
+        let that = this;
+        return this.maybeCall(function () {
+            return that.maybeBinary(that.parseAtomic(), 0);
         });
     }
 }

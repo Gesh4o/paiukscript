@@ -12,5 +12,12 @@
   "bugs": {
     "url": "https://github.com/l18m/paiukscript/issues"
   },
-  "homepage": "https://github.com/l18m/paiukscript#readme"
+  "homepage": "https://github.com/l18m/paiukscript#readme",
+  "devDependencies": {
+    "jasmine": "^2.8.0"
+  },
+  "scripts": {
+    "test": "jasmine",
+    "run": "jasmine && node index.js "
+  }
 }

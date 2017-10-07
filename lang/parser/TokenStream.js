@@ -1,4 +1,4 @@
-module.export = class TokenStream {
+module.exports = class TokenStream {
     constructor(input) {
         this.current = null;
         this.keywords = " if then else paiuk lambda λ true false ";
@@ -6,19 +6,19 @@ module.export = class TokenStream {
     }
 
     isKeyword(x) {
-        return keywords.indexOf(" " + x + " ") >= 0;
+        return this.keywords.indexOf(" " + x + " ") >= 0;
     }
 
-    isDigit(ch) {
-        return /[0-9]/i.test(ch);
+    isDigit(char) {
+        return /[0-9]/i.test(char) && char.length === 1;
     }
 
-    isIdStart(ch) {
-        return /[a-zλ_]/i.test(ch);
+    isIdStart(char) {
+        return /[a-zλ_]/i.test(char) && char.length === 1;
     }
 
     isId(ch) {
-        return isIdStart(ch) || "?!-<>=0123456789".indexOf(ch) >= 0;
+        return this.isIdStart(ch) || "?!-<>=0123456789".indexOf(ch) >= 0;
     }
 
     isOperator(ch) {
@@ -35,8 +35,7 @@ module.export = class TokenStream {
 
     readWhile(predicate) {
         let str = "";
-        while (!this.input.eof() &&
-            predicate(this.input.peek())) {
+        while (!this.input.isEndOfFile() && predicate(this.input.peek())) {
             str += this.input.next();
         }
 
@@ -45,8 +44,9 @@ module.export = class TokenStream {
 
     readNumber() {
         let hasDot = false;
-        let number = readWhile(function (ch) {
-            if (ch == ".") {
+        let that = this;
+        let number = this.readWhile(function (char) {
+            if (char == ".") {
                 if (hasDot) {
                     return false;
                 }
@@ -55,16 +55,16 @@ module.export = class TokenStream {
                 return true;
             }
 
-            return isDigit(ch);
+            return that.isDigit(char);
         });
 
         return { type: "num", value: parseFloat(number) };
     }
 
     readIdent() {
-        let id = readWhile(isId);
+        let id = this.readWhile(this.isId.bind(this));
         return {
-            type: isKeyword(id) ? "kw" : "var",
+            type: this.isKeyword(id) ? "kw" : "var",
             value: id
         };
     }
@@ -92,11 +92,11 @@ module.export = class TokenStream {
     }
 
     readString() {
-        return { type: "str", value: readEscaped('"') };
+        return { type: "str", value: this.readEscaped('"') };
     }
 
     skipComment() {
-        readWhile(function (ch) {
+        this.readWhile(function (ch) {
             return ch != "\n"
         });
 
@@ -104,57 +104,61 @@ module.export = class TokenStream {
     }
 
     readNext() {
-        readWhile(isWhitespace);
+        this.readWhile(this.isWhitespace);
         if (this.input.isEndOfFile()) {
             return null;
         }
 
-        var ch = this.input.peek();
-        if (ch == "#") {
-            skipComment();
-            return readNnext();
+        var char = this.input.peek();
+        if (char == "#") {
+            this.skipComment();
+            return this.readNext();
         }
 
-        if (ch == '"') {
-            return readString();
+        if (char == '"') {
+            return this.readString();
         }
 
-        if (isDigit(ch)) {
-            return readNumber();
+        if (this.isDigit(char)) {
+            return this.readNumber();
         }
 
-        if (isIdStart(ch)) {
-            return readIdent();
+        if (this.isIdStart(char)) {
+            return this.readIdent();
         }
 
-        if (isPunctoation(ch)) {
+        if (this.isPunctoation(char)) {
             return {
                 type: "punc",
-                value: input.next()
+                value: this.input.next()
             }
         }
 
-        if (isOperator(ch)) {
+        if (this.isOperator(char)) {
             return {
                 type: "op",
-                value: readWhile(isOperator)
+                value: this.readWhile(this.isOperator)
             };
         }
 
-        this.input.croak("Can't handle character: " + ch);
+        this.input.raiseError("Can't handle character: " + char);
     }
 
     peek() {
-        return this.current || (this.current = readNext());
+        return this.current || (this.current = this.readNext());
     }
 
     next() {
-        var tok = current;
+        var token = this.current;
         this.current = null;
-        return tok || readNext();
+        return token || this.readNext();
     }
 
     isEndOfFile() {
-        return peek() == null;
+        return this.peek() == null;
+    }
+
+    raiseError(errorMessage) {
+        this.input.raiseError(errorMessage);
     }
 }
