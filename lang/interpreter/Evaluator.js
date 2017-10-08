@@ -24,13 +24,13 @@ module.exports = class Evaluator {
             case "lambda":
                 return this.makeLambda(expression, environment);
             case "let":
-                exp.vars.forEach(function (v) {
+                expression.vars.forEach(function (v) {
                     let scope = environment.extend();
-                    scope.def(v.name, v.def ? that.evaluate(v.def, environment) : false);
-                    env = scope;
+                    scope.define(v.name, v.def ? that.evaluate(v.def, environment) : false);
+                    environment = scope;
                 });
 
-                return this.evaluate(exp.body, env);
+                return this.evaluate(expression.body, environment);
             case "if":
                 let cond = this.evaluate(expression.cond, environment);
                 if (cond !== false) return this.evaluate(expression.then, environment);
@@ -86,8 +86,8 @@ module.exports = class Evaluator {
 
     makeLambda(expression, environment) {
         if (expression.name) {
-            env = env.extend();
-            env.define(expression.name, lambda);
+            environment = environment.extend();
+            environment.define(expression.name, lambda);
         }
 
         let that = this;

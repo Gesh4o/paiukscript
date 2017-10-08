@@ -3,7 +3,6 @@ const Environment = require('./lang/interpreter/Environment'),
     InputStream = require('./lang/parser/InputStream'),
     Parser = require('./lang/parser/Parser'),
     Evaluator = require('./lang/interpreter/Evaluator');
-
 var globalEnv = new Environment(null);
 
 globalEnv.define("time", function (func) {

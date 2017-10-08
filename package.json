@@ -14,10 +14,11 @@
   },
   "homepage": "https://github.com/l18m/paiukscript#readme",
   "devDependencies": {
-    "jasmine": "^2.8.0"
+    "jasmine": "2.8.0",
+    "istanbul": "0.4.5"
   },
   "scripts": {
-    "test": "jasmine",
+    "test": "istanbul cover node_modules/jasmine/bin/jasmine.js",
     "run": "jasmine && node index.js "
   }
 }

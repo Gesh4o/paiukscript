@@ -71,6 +71,26 @@ describe('Evaluator ', () => {
         let evaluation = evaluator.evaluate(getExpression(code), env);
         expect(env.get('result')).toEqual(120);
     });
+
+    it('should assign proper value on Arithmetic progression call with named function', () => {
+        let code = 'sum = let loop (n = 15) if n > 0 then n + loop(n - 1) else 0'
+        let env = new Environment(null);
+
+        let evaluation = evaluator.evaluate(getExpression(code), env);
+        expect(env.get('sum')).toEqual(120);
+    });
+
+    it('should assign proper value on Arithmetic progression call with named function', () => {
+        let code = 'let (x = 2, y = x + 1, z = x + y) println(x + y + z);'
+        let env = new Environment(null);
+        let result = null;
+        env.define('println', (printable) => {
+            result = printable;
+        });
+
+        let evaluation = evaluator.evaluate(getExpression(code), env);
+        expect(result).toEqual(10);
+    });
 })
 
 function getExpression(code) {
