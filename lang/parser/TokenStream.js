@@ -1,7 +1,7 @@
 module.exports = class TokenStream {
     constructor(input) {
         this.current = null;
-        this.keywords = " if then else paiuk lambda λ true false ";
+        this.keywords = " if then else paiuk lambda λ true false let ";
         this.input = input;
     }
 

@@ -3,7 +3,7 @@ module.exports = class Evaluator {
     }
 
     evaluate(expression, environment) {
-        let that = this;        
+        let that = this;
         switch (expression.type) {
             case "num":
             case "str":
@@ -23,6 +23,14 @@ module.exports = class Evaluator {
                     this.evaluate(expression.right, environment));
             case "lambda":
                 return this.makeLambda(expression, environment);
+            case "let":
+                exp.vars.forEach(function (v) {
+                    let scope = environment.extend();
+                    scope.def(v.name, v.def ? that.evaluate(v.def, environment) : false);
+                    env = scope;
+                });
+
+                return this.evaluate(exp.body, env);
             case "if":
                 let cond = this.evaluate(expression.cond, environment);
                 if (cond !== false) return this.evaluate(expression.then, environment);
@@ -77,6 +85,11 @@ module.exports = class Evaluator {
     }
 
     makeLambda(expression, environment) {
+        if (expression.name) {
+            env = env.extend();
+            env.define(expression.name, lambda);
+        }
+
         let that = this;
         function lambda() {
             let names = expression.vars;

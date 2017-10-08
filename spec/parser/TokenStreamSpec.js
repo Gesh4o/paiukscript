@@ -8,7 +8,7 @@ describe('Basic TokenStream', function () {
         let tokenStream = new TokenStream(inputStream);
         expect(tokenStream.current).toEqual(null);
         expect(tokenStream.input).toEqual(inputStream);
-        expect(tokenStream.keywords).toEqual(' if then else paiuk lambda λ true false ');
+        expect(tokenStream.keywords).toEqual(' if then else paiuk lambda λ true false let ');
     })
 })
 

@@ -14,6 +14,7 @@ describe('Parser ', function () {
         expect(JSON.stringify(result.prog[0].left)).toEqual(JSON.stringify({ type: 'var', value: 'sum' }));
         expect(JSON.stringify(result.prog[0].right)).toEqual(JSON.stringify({
             type: 'lambda',
+            name: null,
             vars: ['x', 'y'],
             body: {
                 type: 'binary',
@@ -82,6 +83,47 @@ describe('Parser ', function () {
         expect(() => {
             parser.parse(getTokenStream(code));
         }).toThrowError();
+    });
+
+    it('should parse named function', () => {
+        let code = 'let loop (n = 10) if n > 0 then n + loop(n - 1) else 0'
+        let parser = new Parser();
+        let result = parser.parse(getTokenStream(code));
+        let object = result.prog[0];
+        expect(result).toBeDefined();
+        expect(result.type).toEqual('prog');
+        expect(object).toBeDefined();
+        expect(object).toEqual({
+            type: 'call',
+            func: {
+                type: 'lambda',
+                name: 'loop',
+                vars: ['n'],
+                body: {
+                    type: 'if',
+                    cond:
+                    {
+                        type: 'binary',
+                        operator: '>',
+                        left: { type: 'var', value: 'n' },
+                        right: { type: 'num', value: 0 }
+                    },
+                    then:
+                    {
+                        type: 'binary',
+                        operator: '+',
+                        left: { type: 'var', value: 'n' },
+                        right: {
+                            type: 'call',
+                            func: { type: 'var', value: 'loop' },
+                            args: [{ type: 'binary', operator: '-', left: { type: 'var', value: 'n' }, right: { type: 'num', value: 1 } }]
+                        }
+                    },
+                    else: { type: 'num', value: 0 }
+                }
+            },
+            args: [{ type: 'num', value: 10 }]
+        })
     });
 })
 

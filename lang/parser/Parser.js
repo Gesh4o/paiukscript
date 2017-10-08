@@ -146,9 +146,43 @@ module.exports = class Parser {
     parseLambda() {
         return {
             type: "lambda",
+            name: this.input.peek().type == "var" ? this.input.next().value : null,
             vars: this.delimited("(", ")", ",", this.parseVarname),
             body: this.parseExpression()
         };
+    }
+
+    parseLet() {
+        this.skipKeyword("let");
+        if (this.input.peek().type == "var") {
+            var name = this.input.next().value;
+            var defs = this.delimited("(", ")", ",", this.parseDef.bind(this));
+            return {
+                type: "call",
+                func: {
+                    type: "lambda",
+                    name: name,
+                    vars: defs.map(function (def) { return def.name }),
+                    body: this.parseExpression(),
+                },
+                args: defs.map(function (def) { return def.def || FALSE })
+            };
+        }
+
+        return {
+            type: "let",
+            vars: this.delimited("(", ")", ",", this.parseDef.bind(this)),
+            body: this.parseExpression(),
+        };
+    }
+
+    parseDef() {
+        let name = this.parseVarname(), def = null;
+        if (this.isOperator("=")) {
+            this.input.next();
+            def = this.parseExpression();
+        }
+        return { name: name, def: def };
     }
 
     parseBool() {
@@ -190,9 +224,13 @@ module.exports = class Parser {
                 return that.parseLambda();
             }
 
+            if (that.isKeyword("let")) {
+                return that.parseLet();
+            }
+
             let token = that.input.next();
-            if (token.type == "var" || token.type == "num" || token.type == "str"){
-                return token;                
+            if (token.type == "var" || token.type == "num" || token.type == "str") {
+                return token;
             }
 
             that.unexpected();
@@ -203,7 +241,7 @@ module.exports = class Parser {
         let prog = [];
         while (!this.input.isEndOfFile()) {
             prog.push(this.parseExpression());
-            
+
             if (!this.input.isEndOfFile()) {
                 this.skipPunctuation(";");
             }
