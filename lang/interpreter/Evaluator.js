@@ -50,6 +50,10 @@ module.exports = class Evaluator {
     }
 
     applyOperation(operand, a, b) {
+        if (typeof a == "string" && typeof b == "string") {
+            return a + b;
+        }
+
         function num(x) {
             if (typeof x != "number") {
                 throw new Error("Expected number but got " + x);

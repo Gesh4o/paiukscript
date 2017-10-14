@@ -91,6 +91,47 @@ describe('Evaluator ', () => {
         let evaluation = evaluator.evaluate(getExpression(code), env);
         expect(result).toEqual(10);
     });
+
+    it('should throw exception when devision by 0 is performed', () => {
+        let code = 'a = 5 /0';
+        let env = new Environment(null);
+
+        expect(() => {
+            evaluator.evaluate(getExpression(code), env);
+        }).toThrow(new Error("Divide by zero"));
+    });
+
+    it('should throw exception when not supported operation is performed', () => {
+        let code = 'a = 3 + "5"';
+        let env = new Environment(null);
+
+        expect(() => {
+            evaluator.evaluate(getExpression(code), env);
+        }).toThrow(new Error("Expected number but got " + "5"));
+    });
+
+    it('should properly evaluate number addition', () => {
+        let code = 'a = 3 + 8';
+        let env = new Environment(null);
+        evaluator.evaluate(getExpression(code), env);
+        expect(env.get('a')).toEqual(11);
+    });
+
+    it('should properly evaluate string concatenation', () => {
+        let code = 'a = "3" + "8"';
+        let env = new Environment(null);
+        evaluator.evaluate(getExpression(code), env);
+        expect(env.get('a')).toEqual("38");
+    });
+
+    it('should throw exception when operator is not finished', () => {
+        let code = 'a = true & false';
+        let env = new Environment(null);
+
+        expect(() => {
+            evaluator.evaluate(getExpression(code), env);
+        }).toThrow(new Error('Expecting punctuation: ";" (1:10)'));
+    });
 })
 
 function getExpression(code) {
