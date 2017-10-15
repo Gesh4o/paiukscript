@@ -5,12 +5,16 @@ const Evaluator = require('../../lang/interpreter/Evaluator'),
     Parser = require('../../lang/parser/Parser');
 
 describe('Evaluator ', () => {
-    let evaluator = new Evaluator();
-    let env = new Environment(null);
+    let evaluator;
+    let env;
+
+    beforeEach(() => {
+        evaluator = new Evaluator();
+        env = new Environment(null);
+    })
 
     it('should assign function as variable', () => {
         let code = 'sum = lambda(x, y) x + y;'
-        let env = new Environment(null);
 
         let evaluation = evaluator.evaluate(getExpression(code), env);
         expect(env.get('sum')).toBeDefined();
@@ -18,7 +22,6 @@ describe('Evaluator ', () => {
 
     it('should assign function as variable and retrieve the result of invoking it ', () => {
         let code = 'sum = lambda(x, y) x + y; result = sum(2,3);'
-        let env = new Environment(null);
 
         let evaluation = evaluator.evaluate(getExpression(code), env);
         expect(env.get('result')).toEqual(5);
@@ -26,7 +29,6 @@ describe('Evaluator ', () => {
 
     it('should assign integer to variable ', () => {
         let code = 'result = 5;'
-        let env = new Environment(null);
 
         let evaluation = evaluator.evaluate(getExpression(code), env);
         expect(env.get('result')).toEqual(5);
@@ -34,7 +36,6 @@ describe('Evaluator ', () => {
 
     it('should assign float to variable ', () => {
         let code = 'result = 3.14;'
-        let env = new Environment(null);
 
         let evaluation = evaluator.evaluate(getExpression(code), env);
         expect(env.get('result')).toEqual(3.14);
@@ -42,7 +43,6 @@ describe('Evaluator ', () => {
 
     it('should assign bool to variable ', () => {
         let code = 'result = true;'
-        let env = new Environment(null);
 
         let evaluation = evaluator.evaluate(getExpression(code), env);
         expect(env.get('result')).toBeTruthy();
@@ -50,7 +50,6 @@ describe('Evaluator ', () => {
 
     it('should assign string to variable ', () => {
         let code = 'result = "I am custom string!";'
-        let env = new Environment(null);
 
         let evaluation = evaluator.evaluate(getExpression(code), env);
         expect(env.get('result')).toEqual("I am custom string!");
@@ -58,7 +57,6 @@ describe('Evaluator ', () => {
 
     it('should assign proper value on Fibonacci call ', () => {
         let code = 'fib = lambda(x) if(x < 2) then x else fib(x - 1) + fib(x - 2); result = fib(15)'
-        let env = new Environment(null);
 
         let evaluation = evaluator.evaluate(getExpression(code), env);
         expect(env.get('result')).toEqual(610);
@@ -66,7 +64,6 @@ describe('Evaluator ', () => {
 
     it('should assign proper value on Arithmetic progression call ', () => {
         let code = 'prog = lambda(x) if(x == 0) then 0 else x + prog(x - 1); result = prog(15)'
-        let env = new Environment(null);
 
         let evaluation = evaluator.evaluate(getExpression(code), env);
         expect(env.get('result')).toEqual(120);
@@ -74,7 +71,6 @@ describe('Evaluator ', () => {
 
     it('should assign proper value on Arithmetic progression call with named function', () => {
         let code = 'sum = let loop (n = 15) if n > 0 then n + loop(n - 1) else 0'
-        let env = new Environment(null);
 
         let evaluation = evaluator.evaluate(getExpression(code), env);
         expect(env.get('sum')).toEqual(120);
@@ -82,7 +78,6 @@ describe('Evaluator ', () => {
 
     it('should assign proper value on Arithmetic progression call with named function', () => {
         let code = 'let (x = 2, y = x + 1, z = x + y) println(x + y + z);'
-        let env = new Environment(null);
         let result = null;
         env.define('println', (printable) => {
             result = printable;
@@ -94,7 +89,6 @@ describe('Evaluator ', () => {
 
     it('should throw exception when devision by 0 is performed', () => {
         let code = 'a = 5 /0';
-        let env = new Environment(null);
 
         expect(() => {
             evaluator.evaluate(getExpression(code), env);
@@ -103,7 +97,6 @@ describe('Evaluator ', () => {
 
     it('should throw exception when not supported operation is performed', () => {
         let code = 'a = 3 + "5"';
-        let env = new Environment(null);
 
         expect(() => {
             evaluator.evaluate(getExpression(code), env);
@@ -112,21 +105,20 @@ describe('Evaluator ', () => {
 
     it('should properly evaluate number addition', () => {
         let code = 'a = 3 + 8';
-        let env = new Environment(null);
+
         evaluator.evaluate(getExpression(code), env);
         expect(env.get('a')).toEqual(11);
     });
 
     it('should properly evaluate string concatenation', () => {
         let code = 'a = "3" + "8"';
-        let env = new Environment(null);
+
         evaluator.evaluate(getExpression(code), env);
         expect(env.get('a')).toEqual("38");
     });
 
     it('should throw exception when operator is not finished', () => {
         let code = 'a = true & false';
-        let env = new Environment(null);
 
         expect(() => {
             evaluator.evaluate(getExpression(code), env);

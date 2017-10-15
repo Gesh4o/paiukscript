@@ -1,6 +1,7 @@
 const Parser = require('../../lang/parser/Parser'),
     InputStream = require('../../lang/parser/InputStream'),
-    TokenStream = require('../../lang/parser/TokenStream');
+    TokenStream = require('../../lang/parser/TokenStream'),
+    getTokenStream = require('../Utils').getTokenStream;
 
 describe('Parser ', function () {
     it('should parse lambda function as object function', () => {
@@ -126,8 +127,3 @@ describe('Parser ', function () {
         })
     });
 })
-
-function getTokenStream(inputAsString) {
-    let inputStream = new InputStream(inputAsString);
-    return new TokenStream(inputStream);
-}
