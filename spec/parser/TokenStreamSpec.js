@@ -67,11 +67,6 @@ describe('TokenStream isDigit function', function () {
 })
 
 describe('TokenStream isIdStart function', function () {
-    it('should return true on string with lambda', () => {
-        let tokenStream = getDefaultTokenStream();
-        expect(tokenStream.isIdStart("lambda")).toBeTruthy();
-    });
-
     it('should return true on string with underscore', () => {
         let tokenStream = getDefaultTokenStream();
         expect(tokenStream.isIdStart("_")).toBeTruthy();
