@@ -219,7 +219,7 @@ module.exports = class Parser {
                 return that.parseBool();
             }
 
-            if (that.isKeyword("lambda") || that.isKeyword("λ")) {
+            if (that.isKeyword("lambda")) {
                 that.input.next();
                 return that.parseLambda();
             }

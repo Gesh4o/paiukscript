@@ -1,7 +1,7 @@
 module.exports = class TokenStream {
     constructor(input) {
         this.current = null;
-        this.keywords = " if then else paiuk lambda λ true false let ";
+        this.keywords = " if then else paiuk lambda true false let ";
         this.input = input;
     }
 
@@ -14,7 +14,7 @@ module.exports = class TokenStream {
     }
 
     isIdStart(char) {
-        return /[a-zλ_]/i.test(char) && char.length === 1;
+        return /[a-z_]/i.test(char) && char.length === 1;
     }
 
     isId(ch) {

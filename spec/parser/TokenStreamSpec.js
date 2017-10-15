@@ -8,7 +8,7 @@ describe('Basic TokenStream', function () {
         let tokenStream = new TokenStream(inputStream);
         expect(tokenStream.current).toEqual(null);
         expect(tokenStream.input).toEqual(inputStream);
-        expect(tokenStream.keywords).toEqual(' if then else paiuk lambda λ true false let ');
+        expect(tokenStream.keywords).toEqual(' if then else paiuk lambda true false let ');
     })
 })
 
@@ -69,7 +69,7 @@ describe('TokenStream isDigit function', function () {
 describe('TokenStream isIdStart function', function () {
     it('should return true on string with lambda', () => {
         let tokenStream = getDefaultTokenStream();
-        expect(tokenStream.isIdStart("λ")).toBeTruthy();
+        expect(tokenStream.isIdStart("lambda")).toBeTruthy();
     });
 
     it('should return true on string with underscore', () => {
