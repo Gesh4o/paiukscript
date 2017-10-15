@@ -165,7 +165,7 @@ module.exports = class Parser {
                     vars: defs.map(function (def) { return def.name }),
                     body: this.parseExpression(),
                 },
-                args: defs.map(function (def) { return def.def || FALSE })
+                args: defs.map(function (def) { return def.def || { type: "bool", value: false } })
             };
         }
 
@@ -253,7 +253,7 @@ module.exports = class Parser {
     parseProg() {
         let prog = this.delimited("{", "}", ";", parseExpression);
         if (prog.length == 0) {
-            return FALSE;
+            return { type: "bool", value: false };
         }
 
         if (prog.length == 1) {
