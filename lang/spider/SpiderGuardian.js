@@ -12,10 +12,7 @@ module.exports = class SpiderGuardian extends Evaluator {
         }
 
         this.energyCostTable = {
-            "num": 1,
-            "str": 1,
-            "bool": 1,
-            "var": 3,
+            "var": 1,
             "lambda": 3,
             "let": 5,
             "if": 5,

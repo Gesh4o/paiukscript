@@ -251,7 +251,7 @@ module.exports = class Parser {
     }
 
     parseProg() {
-        let prog = this.delimited("{", "}", ";", parseExpression);
+        let prog = this.delimited("{", "}", ";", this.parseExpression);
         if (prog.length == 0) {
             return { type: "bool", value: false };
         }
